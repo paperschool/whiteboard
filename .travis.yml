@@ -3,14 +3,8 @@ sudo: required
 services:
   - docker
 
-language: node_js
+before_install:
+    - docker pull node:12-slim
 
-node_js:
-  - 12
-
-cache:
-  directories:
-  - node_modules
-
-after_success:
+script:
   - sh ./deploy_dockerhub.sh
