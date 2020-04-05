@@ -6,14 +6,11 @@ services:
 language: node_js
 
 node_js:
-  - 10
+  - 12
 
 cache:
   directories:
   - node_modules
-
-before_install:
-  - npm i -g npm@lts
 
 after_success:
   - sh ./deploy_dockerhub.sh

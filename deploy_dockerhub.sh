@@ -2,7 +2,7 @@
 
 docker login -u $DOCKER_USER -p $DOCKER_PASS
 
-IMAGE_NAME="azzurra-essex-website"
+IMAGE_NAME="whiteboard-app"
 
 if [ "$TRAVIS_BRANCH" = "master" ]; then
     TAG="latest"
