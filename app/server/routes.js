@@ -1,9 +1,7 @@
 import express from "express";
 import markupProvider from "./providers/markupProvider";
 import manifestProvider from "./providers/manifestProvider";
-import {
-    resetData
-} from "./whiteboard/state";
+import { clearWhiteboard } from "./whiteboard";
 
 
 const router = express.Router();
@@ -19,8 +17,8 @@ router.get("/", (req, res) => {
 });
 
 router.get("/reset", (req, res) => {
-    resetData()
-    res.status(200).send("ok")
+    clearWhiteboard()
+    res.redirect("/")
 });
 
 export default router;

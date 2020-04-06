@@ -1,7 +1,6 @@
-import { getCurvePoints } from "./utils";
-
 class Canvas {
     constructor({ canvasId }) {
+
         this.canvas = document.getElementById(canvasId);
         this.context = this.canvas.getContext('2d');
         this.context.scale(window.devicePixelRatio, window.devicePixelRatio)
@@ -13,15 +12,13 @@ class Canvas {
         }
         this.mouse = { x: 0, y: 0 }
 
-        this.setSize(this.size);
-
-        this.setupEvents()
-        this.setupPen()
-
         this.penDown = false;
         this.currentLine = []
         this.userPenColour = "#fff"
 
+        this.setSize(this.size);
+        this.setupEvents()
+        this.setupPen()
         this.mouseUpHook = () => 0;
 
     }
@@ -46,6 +43,17 @@ class Canvas {
     }
 
     setupEvents() {
+
+        this.canvas.addEventListener('mousedown', e => {
+            this.penDown = true;
+            this.startLine({
+                point: {
+                    x: this.mouse.x,
+                    y: this.mouse.y
+                }, colour: this.userPenColour
+            })
+        }, false);
+
         this.canvas.addEventListener('mousemove', e => {
             // update mouse vector
             this.mouse.x = e.pageX - this.canvas.offsetLeft;
@@ -61,16 +69,6 @@ class Canvas {
                     point: this.mouse
                 })
             }
-        }, false);
-
-        this.canvas.addEventListener('mousedown', e => {
-            this.penDown = true;
-            this.startLine({
-                point: {
-                    x: this.mouse.x,
-                    y: this.mouse.y
-                }, colour: this.userPenColour
-            })
         }, false);
 
         this.canvas.addEventListener('mouseup', () => {
@@ -123,6 +121,9 @@ class Canvas {
         this.context.stroke();
     }
 
+    clear() {
+        this.context.clearRect(0, 0, this.size.x, this.size.y);
+    }
 }
 
 export default Canvas;

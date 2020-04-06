@@ -12,16 +12,25 @@ class Whiteboard {
             canvasId: whiteBoardId
         });
 
-        this.lines = []
-
+        this.linesToBeDrawn = []
         this.setupEvents()
     }
 
     setupEvents() {
         this.canvas.registerMouseUpHook(line => {
-            this.addLine(line.splice(0))
-            this.socket.emit("newLine", this.lines[this.lines.length - 1])
+            // emit newly drawn line
+            this.socket.emit("newLine", line)
+
+            // draw lines that came in while drawing this line
+            console.log("Drawing Missing Lines - ", this.linesToBeDrawn.length)
+            this.linesToBeDrawn.forEach(lineToBeDrawn => this.canvas.drawLine({
+                points: lineToBeDrawn.line,
+                colour: lineToBeDrawn.colour
+            }))
+            this.linesToBeDrawn = [];
+
         })
+
 
         this.socket.on("clientSetup", clientConfig => {
             this.canvas.userPenColour = clientConfig.colour;
@@ -33,25 +42,40 @@ class Whiteboard {
             for (let userId in boardState.users) {
                 const user = boardState.users[userId];
 
-                user.lines.forEach(line => this.canvas.drawLine({
-                    points: line,
-                    colour: user.colour
-                }))
+                user.lines.forEach(line =>
+                    this.canvasDrawLine({
+                        line,
+                        colour: user.colour
+                    }))
             }
         })
 
         this.socket.on("newLine", newLine => {
-            this.addLine(newLine);
             console.log(newLine)
-            this.canvas.drawLine({ points: newLine.line, colour: newLine.colour })
+            this.canvasDrawLine(newLine);
+
+        })
+
+        this.socket.on("clearBoard", () => {
+            console.log("Board Cleared")
+            this.canvas.clear()
         })
 
     }
 
-    addLine(line) {
-        this.lines.push(line);
+    canvasDrawLine(newLine) {
+        if (!this.canvas.penDown) {
+            this.canvas.drawLine({
+                points: newLine.line,
+                colour: newLine.colour
+            })
+        } else {
+            this.linesToBeDrawn.push(newLine);
+        }
     }
 
 }
+
+
 
 export default Whiteboard;

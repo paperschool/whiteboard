@@ -8,6 +8,7 @@ import routes from "./routes";
 // handle socket connections
 import Whiteboard from "./whiteboard";
 
+// express server
 const expressApp = express();
 expressApp.use(express.static(path.join(__dirname, "../client")));
 expressApp.use(routes);

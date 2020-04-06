@@ -1,24 +1,81 @@
 import sockets from "socket.io";
+import { randomInt, randomHex } from "../utilities";
 import {
     connectedClientData,
     connectedClientSockets,
     addClient,
+    addBotClient,
     getClientData,
-    addLineToClient
+    addLineToClient,
+    resetData
 } from "./state";
 
+export const clearWhiteboard = () => {
+    console.log("Client Reset Board")
+    resetData()
+    connectedClientSockets.forEach(
+        client => client.emit("clearBoard")
+    )
+};
+
+const broadcast = (callback, clientResponsible) => {
+    connectedClientSockets.forEach(connectedClient => {
+        if (clientResponsible && clientResponsible.id === connectedClient.id) {
+            return connectedClient
+        }
+        callback(connectedClient)
+    })
+}
+
+const simulateUsers = () => {
+    console.log("Starting Simulation")
+
+    addBotClient({
+        name: "Dominics Only Friend <3"
+    })
+
+    setInterval(() => {
+
+        console.log("Broadcasting New Random Line")
+
+        const newLine = new Array(randomInt({ min: 5, max: 100 }))
+            .fill({
+                x: randomInt({ min: 10, max: 500 }),
+                y: randomInt({ min: 10, max: 500 })
+            })
+            .map((point, index, points) => {
+                if (index !== 0) {
+                    return ({
+                        x: randomInt({ min: 10, max: 500 }),
+                        y: randomInt({ min: 10, max: 500 })
+                    })
+                }
+                return point
+            })
+
+
+        broadcast(connectedClient => {
+            connectedClient.emit("newLine", ({
+                line: newLine,
+                colour: randomHex()
+            }))
+        })
+
+    }, 1000)
+}
 
 const whiteboard = httpServer => {
+
+    // simulateUsers()
 
     const io = sockets(httpServer, { serveClient: false });
 
     io.on('connection', client => {
-        console.log(`Client ${client.id} Established!`)
 
         addClient(client);
 
         // sending client setup details
-        client.emit("clientSetup", getClientData(client.id));
+        client.emit("clientSetup", getClientData(client));
 
         // sending board state
         client.emit("refreshBoard", connectedClientData);
@@ -28,32 +85,29 @@ const whiteboard = httpServer => {
             client.emit("refreshBoard", connectedClientData);
         })
 
-        // on client new line update
-        client.on("newLine", newLinePoints => {
-            console.log(`Line From - ${client.id} with ${newLinePoints.length} Points`);
 
-            if (typeof newLinePoints !== "object" || newLinePoints.length <= 0) {
-                console.log(`Client ${client.id} Sending Poor Data.`)
-                return
-            }
+        // on client new line update
+        client.on("newLine", line => {
+            console.log(`Line From - ${client.id} with ${line.length} Points`);
 
             // store new line data in state
-            addLineToClient({ clientId: client.id, lineData: newLinePoints })
+            // and exit early if line was malformed
+            if (!addLineToClient({ client, lineData: line })) {
+                return;
+            }
 
             // construct new line response
             const newLine = {
-                line: newLinePoints,
-                colour: getClientData(client.id).colour
+                line,
+                colour: getClientData(client).colour
             }
 
-            connectedClientSockets.forEach(connectedClient => {
-                if (client.id !== connectedClient.id) {
-                    console.log(`Pushing: ${newLine.line.length} | ${newLine.colour} to ${connectedClient.id} `)
-                    connectedClient.emit("newLine", newLine);
-                }
-            })
-        })
+            broadcast(connectedClient => {
+                console.log(`Pushing: ${newLine.line.length} | ${newLine.colour} to ${connectedClient.id} `)
+                connectedClient.emit("newLine", newLine);
+            }, client);
 
+        })
 
     });
 
