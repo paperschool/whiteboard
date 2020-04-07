@@ -37,6 +37,11 @@ A Breakdown of the Commands to Use this Project
 
 ### Change Log
 
+#### Update - 07/04/2020
+
+- Initial Touch Control Support
+- Page Title
+
 #### Update - 06/04/2020
 
 - Non Interruptive Drawing

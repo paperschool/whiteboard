@@ -23,6 +23,12 @@ class Canvas {
 
     }
 
+    setMouse(location) {
+        this.mouse = {
+            ...location
+        }
+    }
+
     getCanvas() {
         return this.canvas;
     }
@@ -42,40 +48,68 @@ class Canvas {
         this.canvas.style.height = this.size.y;
     }
 
+    eventNormaliser(e) {
+        if (e.constructor.name === "TouchEvent") {
+            return {
+                x: e.touches[0].clientX,
+                y: e.touches[0].clientY
+            }
+        } else {
+            return {
+                x: e.clientX,
+                y: e.clientY
+            }
+        }
+    }
+
+    penDownEventHandler(e) {
+
+        // update mouse vector
+        this.setMouse(this.eventNormaliser(e))
+        this.penDown = true;
+
+        this.startLine({
+            point: {
+                x: this.mouse.x,
+                y: this.mouse.y
+            }, colour: this.userPenColour
+        })
+    }
+
+    penMoveEventHandler(e) {
+
+        // update mouse vector
+        this.setMouse(this.eventNormaliser(e))
+
+        // draw if pen is down
+        if (this.penDown) {
+            this.currentLine.push({
+                x: this.mouse.x,
+                y: this.mouse.y
+            })
+            this.continueLine({
+                point: this.mouse
+            })
+        }
+    }
+
+    penUpEventHandler(e) {
+        this.penDown = false;
+        this.mouseUpHook(this.currentLine.splice(0));
+        this.currentLine = [];
+    }
+
     setupEvents() {
 
-        this.canvas.addEventListener('mousedown', e => {
-            this.penDown = true;
-            this.startLine({
-                point: {
-                    x: this.mouse.x,
-                    y: this.mouse.y
-                }, colour: this.userPenColour
-            })
-        }, false);
+        // 
+        this.canvas.addEventListener('mousedown', this.penDownEventHandler.bind(this), false);
+        this.canvas.addEventListener("touchstart", this.penDownEventHandler.bind(this), false)
 
-        this.canvas.addEventListener('mousemove', e => {
-            // update mouse vector
-            this.mouse.x = e.pageX - this.canvas.offsetLeft;
-            this.mouse.y = e.pageY - this.canvas.offsetTop;
+        this.canvas.addEventListener('mousemove', this.penMoveEventHandler.bind(this), false);
+        this.canvas.addEventListener('touchmove', this.penMoveEventHandler.bind(this), false);
 
-            // draw if pen is down
-            if (this.penDown) {
-                this.currentLine.push({
-                    x: this.mouse.x,
-                    y: this.mouse.y
-                })
-                this.continueLine({
-                    point: this.mouse
-                })
-            }
-        }, false);
-
-        this.canvas.addEventListener('mouseup', () => {
-            this.penDown = false;
-            this.mouseUpHook(this.currentLine.splice(0));
-            this.currentLine = [];
-        }, false);
+        this.canvas.addEventListener('mouseup', this.penUpEventHandler.bind(this), false);
+        this.canvas.addEventListener('touchend', this.penUpEventHandler.bind(this), false);
 
         window.addEventListener('resize', () => {
             this.setSize({
