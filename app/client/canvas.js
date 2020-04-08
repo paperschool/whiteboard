@@ -47,7 +47,6 @@ class Canvas {
     }
 
     setSize(newSize) {
-        console.log(this.size, newSize)
         this.size = {
             x: newSize.x,
             y: newSize.y

@@ -55,19 +55,18 @@ export const getClientData = client => {
 
 export const getSanitisedClientData = () => {
     let sanitisedData = {
-        ...connectedClientData,
-        users: {
-            ...connectedClientData.users
-        }
+        userCount: connectedClientData.userCount,
+        users: {}
     }
 
-    Object.entries(sanitisedData.users).forEach(([userName, userData], index) => {
-        delete sanitisedData[userName]
-
+    Object.entries(connectedClientData.users).forEach(([userName, { lines, colour, id }], index) => {
         let newUserName = `USER-${index}`;
-        sanitisedData[newUserName] = userData;
-        delete sanitisedData[newUserName].ip
-
+        sanitisedData.users[newUserName] = {
+            lines,
+            colour,
+            id
+        };
+        delete sanitisedData.users[newUserName].ip
     })
 
     return sanitisedData;
