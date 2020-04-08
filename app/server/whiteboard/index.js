@@ -1,12 +1,12 @@
 import sockets from "socket.io";
 import { randomInt, randomHex } from "../utilities";
 import {
-    connectedClientData,
     connectedClientSockets,
     addClient,
     addBotClient,
-    getClientData,
     addLineToClient,
+    getClientData,
+    getSanitisedClientData,
     resetData
 } from "./state";
 
@@ -78,11 +78,11 @@ const whiteboard = httpServer => {
         client.emit("clientSetup", getClientData(client));
 
         // sending board state
-        client.emit("refreshBoard", connectedClientData);
+        client.emit("refreshBoard", getSanitisedClientData());
 
         // client requesting state
         client.on("requestRefresh", () => {
-            client.emit("refreshBoard", connectedClientData);
+            client.emit("refreshBoard", getSanitisedClientData());
         })
 
 

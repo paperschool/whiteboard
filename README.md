@@ -1,8 +1,10 @@
 # Whiteboard
 
+[![Build Status](https://travis-ci.com/paperschool/whiteboard.svg?branch=master)](https://travis-ci.com/paperschool/whiteboard)
+
 A websocket based canvas application that allows multiple users to concurrently draw on a surface
 
-### Screenshot
+### Split Screen Example
 
 The whiteboard app open in two different sessions
 
@@ -34,13 +36,14 @@ A Breakdown of the Commands to Use this Project
 - [Docker](https://www.docker.com/)
 - [TravisCi](https://travis-ci.org/)
 
-
 ### Change Log
 
 #### Update - 08/04/2020
 
 - Fixed canvas resizing with adjustable debounce
 - Increased resolution scaling for better line sharpness
+- Sanitise Refresh Object Data
+- Added Screenshot
 
 #### Update - 07/04/2020
 

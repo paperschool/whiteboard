@@ -144,7 +144,7 @@ class Canvas {
     }
 
     setupPen() {
-        this.context.lineWidth = 10;
+        this.context.lineWidth = 5;
         this.context.lineJoin = 'round';
         this.context.lineCap = 'round';
         this.context.strokeStyle = "#fff";

@@ -53,6 +53,26 @@ export const getClientData = client => {
     return connectedClientData.users[getIp(client)] || {}
 }
 
+export const getSanitisedClientData = () => {
+    let sanitisedData = {
+        ...connectedClientData,
+        users: {
+            ...connectedClientData.users
+        }
+    }
+
+    Object.entries(sanitisedData.users).forEach(([userName, userData], index) => {
+        delete sanitisedData[userName]
+
+        let newUserName = `USER-${index}`;
+        sanitisedData[newUserName] = userData;
+        delete sanitisedData[newUserName].ip
+
+    })
+
+    return sanitisedData;
+}
+
 export const addLineToClient = ({ client, lineData }) => {
 
     // validating line data

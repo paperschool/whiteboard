@@ -32,9 +32,9 @@ class Whiteboard {
         })
 
         this.canvas.registerResizeHook(() => {
+            this.socket.emit("requestRefresh")
             this.canvas.clear()
             this.canvas.setupPen()
-            this.socket.emit("requestRefresh")
         })
 
 
