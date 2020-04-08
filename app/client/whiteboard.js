@@ -31,6 +31,12 @@ class Whiteboard {
 
         })
 
+        this.canvas.registerResizeHook(() => {
+            this.canvas.clear()
+            this.canvas.setupPen()
+            this.socket.emit("requestRefresh")
+        })
+
 
         this.socket.on("clientSetup", clientConfig => {
             this.canvas.userPenColour = clientConfig.colour;
@@ -64,6 +70,7 @@ class Whiteboard {
     }
 
     canvasDrawLine(newLine) {
+
         if (!this.canvas.penDown) {
             this.canvas.drawLine({
                 points: newLine.line,

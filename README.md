@@ -37,6 +37,11 @@ A Breakdown of the Commands to Use this Project
 
 ### Change Log
 
+#### Update - 08/04/2020
+
+- Fixed canvas resizing with adjustable debounce
+- Increased resolution scaling for better line sharpness
+
 #### Update - 07/04/2020
 
 - Initial Touch Control Support

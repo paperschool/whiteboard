@@ -3,7 +3,12 @@ class Canvas {
 
         this.canvas = document.getElementById(canvasId);
         this.context = this.canvas.getContext('2d');
-        this.context.scale(window.devicePixelRatio, window.devicePixelRatio)
+        this.context.translate(0.5, 0.5)
+        this.scale = 2;
+        this.context.scale(
+            window.devicePixelRatio * this.scale,
+            window.devicePixelRatio * this.scale
+        );
 
         this.parent = this.canvas.parentElement;
         this.size = {
@@ -16,10 +21,14 @@ class Canvas {
         this.currentLine = []
         this.userPenColour = "#fff"
 
+        this.isResizing = false;
+        this.resizeDebounceTime = 500;
+
         this.setSize(this.size);
         this.setupEvents()
         this.setupPen()
         this.mouseUpHook = () => 0;
+        this.resizeHook = () => 0;
 
     }
 
@@ -38,26 +47,27 @@ class Canvas {
     }
 
     setSize(newSize) {
+        console.log(this.size, newSize)
         this.size = {
             x: newSize.x,
             y: newSize.y
         }
-        this.canvas.width = this.size.x;
-        this.canvas.height = this.size.y;
-        this.canvas.style.width = this.size.x;
-        this.canvas.style.height = this.size.y;
+        this.canvas.width = this.size.x * this.scale;
+        this.canvas.height = this.size.y * this.scale;
+        this.canvas.style.width = this.size.x + "px";
+        this.canvas.style.height = this.size.y + "px";
     }
 
     eventNormaliser(e) {
         if (e.constructor.name === "TouchEvent") {
             return {
-                x: e.touches[0].clientX,
-                y: e.touches[0].clientY
+                x: e.touches[0].clientX * this.scale,
+                y: e.touches[0].clientY * this.scale
             }
         } else {
             return {
-                x: e.clientX,
-                y: e.clientY
+                x: e.clientX * this.scale,
+                y: e.clientY * this.scale
             }
         }
     }
@@ -101,7 +111,6 @@ class Canvas {
 
     setupEvents() {
 
-        // 
         this.canvas.addEventListener('mousedown', this.penDownEventHandler.bind(this), false);
         this.canvas.addEventListener("touchstart", this.penDownEventHandler.bind(this), false)
 
@@ -111,16 +120,27 @@ class Canvas {
         this.canvas.addEventListener('mouseup', this.penUpEventHandler.bind(this), false);
         this.canvas.addEventListener('touchend', this.penUpEventHandler.bind(this), false);
 
-        window.addEventListener('resize', () => {
-            this.setSize({
-                x: this.parent.offsetWidth,
-                y: this.parent.offsetHeight
-            })
+        window.addEventListener('resize', e => {
+
+            clearTimeout(this.resizeDebounce);
+
+            this.resizeDebounce = setTimeout(() => {
+                this.setSize({
+                    x: this.parent.offsetWidth,
+                    y: this.parent.offsetHeight
+                })
+                this.resizeHook(e)
+            }, this.resizeDebounceTime)
+
         }, false);
     }
 
     registerMouseUpHook(callback) {
         this.mouseUpHook = callback;
+    }
+
+    registerResizeHook(callback) {
+        this.resizeHook = callback
     }
 
     setupPen() {
